@@ -1,0 +1,146 @@
+name: Build Dakota with gnome-software-next
+
+# Fork-only workflow. Each run rebases this branch onto upstream
+# projectbluefin/dakota testing, tracks gnome-software-next wip/core, builds the
+# default image without remote execution (prebuilt artifacts come from the
+# public gnome-build-meta and Bluefin caches) and pushes it as :gsn.
+# The rebase and the tracked ref only live in the runner, so upstream workflow
+# changes never have to be pushed with GITHUB_TOKEN; the image's revision and
+# version labels record both.
+
+on:
+  schedule:
+    # Upstream's daily build starts at 13:00 UTC; build after it is cached.
+    - cron: "0 20 * * *"
+  workflow_dispatch:
+  push:
+    branches: [gsn]
+    paths:
+      - "elements/**"
+      - "patches/**"
+      - "include/**"
+      - "project.conf"
+      - ".github/workflows/gsn-image.yml"
+
+permissions: read-all
+
+env:
+  IMAGE_NAME: dakota
+  IMAGE_TAG: gsn
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  UPSTREAM: https://github.com/projectbluefin/dakota.git
+  UPSTREAM_BRANCH: testing
+
+concurrency:
+  group: gsn-image
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 350
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Rebase onto upstream ${{ env.UPSTREAM_BRANCH }}
+        id: rebase
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch "$UPSTREAM" "$UPSTREAM_BRANCH"
+          base=$(git merge-base HEAD FETCH_HEAD)
+          git rebase --onto FETCH_HEAD "$base"
+          echo "upstream=$(git rev-parse FETCH_HEAD)" >> "$GITHUB_OUTPUT"
+          echo "Upstream: $(git log -1 --format='%h %s' FETCH_HEAD)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Capture build timestamp
+        id: timestamp
+        run: echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup runner
+        uses: projectbluefin/actions/bootc-build/setup-runner@v1
+        with:
+          storage-backend: btrfs
+          update-podman: true
+          native-overlay: true
+          install-tools: '["just"]'
+
+      - name: Generate BuildStream config
+        uses: ./.github/actions/generate-bst-ci-config
+        with:
+          enable-remote-execution: "false"
+          enable-push: "false"
+
+      - name: Use all runner cores
+        # Without remote execution the generated config builds with -j1.
+        run: sed -i 's/^\(\s*max-jobs:\).*/\1 0/' buildstream-ci.conf
+
+      - name: Track gnome-software-next
+        id: gsn
+        env:
+          BST_FLAGS: -o x86_64_v3 false --no-interactive --config /src/buildstream-ci.conf
+        run: |
+          set -euo pipefail
+          just bst source track bluefin/gnome-software.bst
+          ref=$(sed -n 's/^\s*ref: //p' elements/bluefin/gnome-software.bst)
+          echo "ref=${ref}" >> "$GITHUB_OUTPUT"
+          echo "gnome-software-next: ${ref}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build OCI image with BuildStream
+        env:
+          BST_FLAGS: -o x86_64_v3 false --no-interactive --config /src/buildstream-ci.conf
+        run: just bst build oci/bluefin.bst
+        timeout-minutes: 300
+
+      - name: Export OCI image from BuildStream
+        env:
+          BST_FLAGS: -o x86_64_v3 false --no-interactive --config /src/buildstream-ci.conf
+          BUILD_IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          OCI_IMAGE_CREATED: ${{ steps.timestamp.outputs.created }}
+          # Upstream commit and gnome-software-next ref; the rebased commit is never pushed.
+          OCI_IMAGE_REVISION: ${{ steps.rebase.outputs.upstream }}
+          OCI_IMAGE_VERSION: gsn-${{ steps.gsn.outputs.ref }}
+        run: just export default
+
+      - name: Chunkify image layers
+        run: just chunkify "localhost/${IMAGE_NAME}:latest"
+
+      - name: Validate with bootc container lint
+        env:
+          BUILD_IMAGE_NAME: ${{ env.IMAGE_NAME }}
+        run: just lint
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: buildstream-logs
+          path: logs/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Login to GHCR
+        env:
+          GH_ACTOR: ${{ github.actor }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GH_TOKEN" | sudo podman login ghcr.io --username "$GH_ACTOR" --password-stdin
+
+      - name: Push :${{ env.IMAGE_TAG }} to GHCR
+        run: |
+          set -euo pipefail
+          IMAGE="${IMAGE_REGISTRY}/${IMAGE_NAME}"
+          sudo podman tag "localhost/${IMAGE_NAME}:latest" "${IMAGE}:${IMAGE_TAG}"
+          for attempt in 1 2 3; do
+            sudo podman push --compression-format=zstd \
+              --digestfile /tmp/digest.txt "${IMAGE}:${IMAGE_TAG}" && break
+            [ "$attempt" -lt 3 ] || { echo "ERROR: push failed for ${IMAGE}:${IMAGE_TAG}"; exit 1; }
+            sleep 5
+          done
+          echo "- \`${IMAGE}:${IMAGE_TAG}\` \`$(cat /tmp/digest.txt)\`" >> "$GITHUB_STEP_SUMMARY"
