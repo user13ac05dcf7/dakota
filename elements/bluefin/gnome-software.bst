@@ -9,6 +9,11 @@ sources:
   url: gnome_gitlab:user_c1a5830a/gnome-software-next.git
   track: wip/core
   ref: 51.0-669-g57f2c3c01cac524b8b5b4671f1bd6cc26b176f25
+# The release tarballs include this submodule; a git checkout does not.
+- kind: git_repo
+  url: gnome_gitlab:mwleeds/gnome-pwa-list.git
+  directory: subprojects/gnome-pwa-list
+  ref: 48ac9f7ed6a639eab7648f3e3b19105694eaf306
 
 build-depends:
 - gnome-build-meta.bst:buildsystems/meson.bst
