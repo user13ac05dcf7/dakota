@@ -28,7 +28,7 @@ config:
 
     gnomeos-deps/plymouth-gnome-theme.bst: bluefin/plymouth-bluefin-theme.bst
 
-    # gnome-shell with Sheaf built in (gathering windows across workspaces)
+    # gnome-shell with Sheaf, Drop to Overview and Drop to Pane built in
     core/gnome-shell.bst: bluefin/gnome-shell.bst
 
     # Replace the element so the OCI image generates Bluefin's os-release file
