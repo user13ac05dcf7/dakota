@@ -5,8 +5,10 @@ build-depends:
 
 depends:
   # FIXME: cleanup custom make destdirs set when not needed
-  - bluefin/shell-extensions/app-indicators.bst
-  - bluefin/shell-extensions/bazaar-companion.bst
+  # Not shipped in this fork: gnome-shell hosts tray icons itself (Drop to
+  # Pane) and gnome-software-next replaces Bazaar.
+  # - bluefin/shell-extensions/app-indicators.bst
+  # - bluefin/shell-extensions/bazaar-companion.bst
   - bluefin/shell-extensions/blur-my-shell.bst
   - bluefin/shell-extensions/budslink-companion.bst
   - bluefin/shell-extensions/caffeine.bst

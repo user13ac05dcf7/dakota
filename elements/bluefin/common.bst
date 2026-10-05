@@ -103,6 +103,27 @@ config:
     cp -r system_files/shared/etc/./ "%{install-root}%{sysconfdir}/"
     cp -r bluefin-branding/system_files/etc/./ "%{install-root}%{sysconfdir}/"
 
+    # This fork ships gnome-software-next as its app store instead of Bazaar:
+    # drop Bazaar's preinstall, background service and configuration, and
+    # point the dash, search and .flatpakref handling at GNOME Software.
+    rm -rf "%{install-root}%{sysconfdir}/bazaar" \
+      "%{install-root}%{datadir}/flatpak/preinstall.d/bazaar.preinstall" \
+      "%{install-root}%{prefix}/lib/systemd/user/bazaar.service" \
+      "%{install-root}%{prefix}/lib/tmpfiles.d/bazaar-flatpak.conf" \
+      "%{install-root}%{datadir}/ublue-os/flatpak-overrides/io.github.kolunmi.Bazaar"
+    OVERRIDE="%{install-root}%{datadir}/glib-2.0/schemas/zz0-bluefin-modifications.gschema.override"
+    # Software replaces Bazaar as a search provider; in favorite-apps it is
+    # already listed next to Bazaar.
+    sed -i -e "/^enabled=/s/io.github.kolunmi.Bazaar.desktop/org.gnome.Software.desktop/" \
+      -e "s/'io.github.kolunmi.Bazaar.desktop', //" "$OVERRIDE"
+    sed -i "s/io.github.kolunmi.Bazaar.desktop/org.gnome.Software.desktop/" \
+      "%{install-root}%{sysconfdir}/xdg/mimeapps.list"
+    # Fail loudly if common adds Bazaar defaults somewhere new.
+    if [ "$(sed -n '/kolunmi.Bazaar/p' "$OVERRIDE" "%{install-root}%{sysconfdir}/xdg/mimeapps.list" | wc -l)" != 0 ]; then
+      echo "ERROR: Bazaar defaults left in common's files — extend the Bazaar removal" >&2
+      exit 1
+    fi
+
     # Default Bluefin shell MOTD to disabled, while allowing user overrides.
     install -Dm644 /dev/null "%{install-root}%{sysconfdir}/profile.d/bluefin-shell-defaults.sh"
     cat > "%{install-root}%{sysconfdir}/profile.d/bluefin-shell-defaults.sh" <<'EOF'
