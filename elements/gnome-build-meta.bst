@@ -28,6 +28,9 @@ config:
 
     gnomeos-deps/plymouth-gnome-theme.bst: bluefin/plymouth-bluefin-theme.bst
 
+    # gnome-shell with Sheaf built in (gathering windows across workspaces)
+    core/gnome-shell.bst: bluefin/gnome-shell.bst
+
     # Replace the element so the OCI image generates Bluefin's os-release file
     oci/integration/os-release.bst: oci/os-release.bst
 
