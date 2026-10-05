@@ -1,15 +1,17 @@
 kind: meson
 
 # Replaces gnome-build-meta's core/gnome-shell.bst (see the override in
-# gnome-build-meta.bst) with the gnome-shell fork that has Sheaf built in:
-# gathering an app's windows across workspaces in the overview, and
-# Super+Tab. Dependencies and options follow the upstream element; keep them
+# gnome-build-meta.bst) with the gnome-shell fork's dakota branch, which has
+# three extensions built in: Sheaf (gathering an app's windows across
+# workspaces, Super+Tab), Drop to Overview (the clock opens a Today page in
+# the overview) and Drop to Pane (Quick Settings as a side pane with a tray
+# host). Dependencies and options follow the upstream element; keep them
 # in sync when the gnome-build-meta junction moves to a new GNOME release.
 sources:
 - kind: git_repo
   url: gnome_gitlab:user_c1a5830a/gnome-shell.git
-  track: sheaf
-  ref: 51.0-2-g90ab531f8745f586b63d8995e1eefb2842db425d
+  track: dakota
+  ref: 51.0-8-g3fc71feac2e42524348c7724d8e1b2a00f60b7b6
 - kind: git_repo
   url: gnome:libgnome-volume-control.git
   directory: subprojects/gvc
