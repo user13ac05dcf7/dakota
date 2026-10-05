@@ -82,16 +82,19 @@ jobs:
         # Without remote execution the generated config builds with -j1.
         run: sed -i 's/^\(\s*max-jobs:\).*/\1 0/' buildstream-ci.conf
 
-      - name: Track gnome-software-next
+      - name: Track gnome-software-next and gnome-shell
         id: gsn
         env:
           BST_FLAGS: -o x86_64_v3 false --no-interactive --config /src/buildstream-ci.conf
         run: |
           set -euo pipefail
-          just bst source track bluefin/gnome-software.bst
-          ref=$(sed -n 's/^\s*ref: //p' elements/bluefin/gnome-software.bst)
+          just bst source track bluefin/gnome-software.bst bluefin/gnome-shell.bst
+          # The first source of each element is the tracked fork.
+          ref=$(sed -n 's/^\s*ref: //p' elements/bluefin/gnome-software.bst | head -1)
+          shell_ref=$(sed -n 's/^\s*ref: //p' elements/bluefin/gnome-shell.bst | head -1)
           echo "ref=${ref}" >> "$GITHUB_OUTPUT"
           echo "gnome-software-next: ${ref}" >> "$GITHUB_STEP_SUMMARY"
+          echo "gnome-shell (sheaf): ${shell_ref}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Build OCI image with BuildStream
         env:
