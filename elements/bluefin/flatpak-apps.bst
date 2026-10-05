@@ -26,3 +26,7 @@ config:
     for preinstall in bluefin-flatpak/preinstall.d/*.preinstall; do
       install -Dm644 "$preinstall" "%{install-root}/usr/share/flatpak/preinstall.d/$(basename "$preinstall")"
     done
+    # Remotes for preinstalls that are not on Flathub (this fork's Letter).
+    for remote in bluefin-flatpak/remotes.d/*.flatpakrepo; do
+      install -Dm644 "$remote" "%{install-root}/usr/share/flatpak/remotes.d/$(basename "$remote")"
+    done
