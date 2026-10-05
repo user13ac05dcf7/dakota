@@ -11,7 +11,7 @@ sources:
 - kind: git_repo
   url: gnome_gitlab:user_c1a5830a/gnome-shell.git
   track: dakota
-  ref: 51.0-8-g3fc71feac2e42524348c7724d8e1b2a00f60b7b6
+  ref: 51.0-10-g034c3a74b28cdc62455b66099929d03228af48ea
 - kind: git_repo
   url: gnome:libgnome-volume-control.git
   directory: subprojects/gvc
