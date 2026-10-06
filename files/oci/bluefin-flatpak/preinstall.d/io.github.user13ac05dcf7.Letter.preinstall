@@ -1,5 +1,5 @@
 # Installed only from this fork's own repository (remotes.d/letter.flatpakrepo).
-[Flatpak Preinstall io.github.stalvatero.Letter]
+[Flatpak Preinstall io.github.user13ac05dcf7.Letter]
 Branch=stable
 IsRuntime=false
 CollectionID=io.github.user13ac05dcf7.Letter
