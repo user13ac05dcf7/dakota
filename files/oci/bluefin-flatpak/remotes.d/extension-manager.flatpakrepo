@@ -1,0 +1,8 @@
+[Flatpak Repo]
+Title=Extension Manager (extension repository fork)
+Url=https://user13ac05dcf7.github.io/extension-manager/repo/
+Homepage=https://github.com/user13ac05dcf7/extension-manager
+Comment=Extension Manager builds from user13ac05dcf7/extension-manager
+DefaultBranch=stable
+DeployCollectionID=io.github.user13ac05dcf7.ExtensionManager
+GPGKey=mDMEasz6vxYJKwYBBAHaRw8BAQdAVQK8p5ulFVQf5phViLT+5X1BB3WulgQjZ8vj4PpEV620UkV4dGVuc2lvbiBNYW5hZ2VyIGZvcmsgRmxhdHBhayA8MzM4MTkwMjQwK3VzZXIxM2FjMDVkY2Y3QHVzZXJzLm5vcmVwbHkuZ2l0aHViLmNvbT6IkwQTFgoAOxYhBIW+2E0UCCkDTM5uMVBpKiRIbhP+BQJqzPq/AhsDBQsJCAcCAiICBhUKCQgLAgQWAgMBAh4HAheAAAoJEFBpKiRIbhP+0tkBANsKAWuFDDTOeT3ftjqcbdamsCMoNM2ZPECdE9zPii5IAQD6USaSJwV3G+2+6268fQjr3rTCVSFfYn0XBmgrPQf/CQ==

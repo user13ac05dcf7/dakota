@@ -124,6 +124,15 @@ config:
       exit 1
     fi
 
+    # Extension Manager comes preinstalled from the fork's own repository
+    # (flatpak-apps.bst); do not install the Flathub build next to it.
+    BREWFILE="%{install-root}%{datadir}/ublue-os/homebrew/system-flatpaks.Brewfile"
+    sed -i '/^flatpak "com.mattjakeman.ExtensionManager"$/d' "$BREWFILE"
+    if grep -q mattjakeman "$BREWFILE"; then
+      echo "ERROR: Extension Manager left in system-flatpaks.Brewfile" >&2
+      exit 1
+    fi
+
     # Default Bluefin shell MOTD to disabled, while allowing user overrides.
     install -Dm644 /dev/null "%{install-root}%{sysconfdir}/profile.d/bluefin-shell-defaults.sh"
     cat > "%{install-root}%{sysconfdir}/profile.d/bluefin-shell-defaults.sh" <<'EOF'

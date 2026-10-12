@@ -1,0 +1,6 @@
+# The fork with the signed extension repository, installed from its own
+# repository (remotes.d/extension-manager.flatpakrepo) under the official app ID.
+[Flatpak Preinstall com.mattjakeman.ExtensionManager]
+Branch=stable
+IsRuntime=false
+CollectionID=io.github.user13ac05dcf7.ExtensionManager

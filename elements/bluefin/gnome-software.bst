@@ -8,7 +8,7 @@ sources:
 - kind: git_repo
   url: gnome_gitlab:user_c1a5830a/gnome-software-next.git
   track: wip/core
-  ref: 51.0-669-g57f2c3c01cac524b8b5b4671f1bd6cc26b176f25
+  ref: 51.0-679-g4066f55f51fe4132a7cfd563ea1896b2dfb9a055
 # The release tarballs include this submodule; a git checkout does not.
 - kind: git_repo
   url: gnome_gitlab:mwleeds/gnome-pwa-list.git
@@ -37,6 +37,7 @@ depends:
 - gnome-build-meta.bst:sdk/libsoup.bst
 - freedesktop-sdk.bst:components/appstream.bst
 - freedesktop-sdk.bst:components/flatpak.bst
+- freedesktop-sdk.bst:components/gnutls.bst
 - freedesktop-sdk.bst:components/libgudev.bst
 - freedesktop-sdk.bst:components/libxmlb.bst
 - freedesktop-sdk.bst:components/polkit.bst
@@ -52,5 +53,6 @@ variables:
     -Dflatpak=true
     -Deos_updater=true
     -Dpackagekit=false
+    -Dshell_extensions=true
     -Dsnap=true
     -Dsystemd-sysupdate=true

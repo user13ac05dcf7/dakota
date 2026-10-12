@@ -5,13 +5,15 @@ kind: meson
 # three extensions built in: Sheaf (gathering an app's windows across
 # workspaces, Super+Tab), Drop to Overview (the clock opens a Today page in
 # the overview) and Drop to Pane (Quick Settings as a side pane with a tray
-# host). Dependencies and options follow the upstream element; keep them
+# host). It installs extensions from a signed extension repository instead
+# of extensions.gnome.org; Dakota points it at the registry's mirror, which
+# carries EGO's releases byte for byte. Dependencies and options follow the upstream element; keep them
 # in sync when the gnome-build-meta junction moves to a new GNOME release.
 sources:
 - kind: git_repo
   url: gnome_gitlab:user_c1a5830a/gnome-shell.git
   track: dakota
-  ref: 51.0-29-g51616a47ebf15c91836fa127720d7b4c6e8fb730
+  ref: 51.0-35-g28a57927a79690550c3c41734e55d398a1f699b6
 - kind: git_repo
   url: gnome:libgnome-volume-control.git
   directory: subprojects/gvc
@@ -55,6 +57,7 @@ depends:
 - gnome-build-meta.bst:sdk/gobject-introspection.bst
 - gnome-build-meta.bst:sdk/gtk.bst
 - gnome-build-meta.bst:sdk/libsoup.bst
+- freedesktop-sdk.bst:components/gnutls.bst
 - freedesktop-sdk.bst:components/gstreamer.bst
 - freedesktop-sdk.bst:components/gstreamer-plugins-base.bst
 - freedesktop-sdk.bst:public-stacks/runtime-minimal.bst
@@ -62,3 +65,13 @@ depends:
 variables:
   meson-local: >-
     -Dextensions-tool:bash_completion=disabled
+
+config:
+  install-commands:
+    (>):
+    - |
+      install -Dm644 /dev/stdin "%{install-root}%{datadir}/glib-2.0/schemas/zz1-dakota-extension-repository.gschema.override" <<'EOF'
+      [org.gnome.shell]
+      extension-repository='https://shell-extension-registry-550115.gitlab.io/index.json'
+      extension-repository-key='37rwPeZLAvu/3PO70cbnr6trHwutr7SetPnOkCNm5/g='
+      EOF
