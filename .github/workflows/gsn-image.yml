@@ -1,9 +1,10 @@
 name: Build Dakota with gnome-software-next
 
 # Fork-only workflow. Each run rebases this branch onto upstream
-# projectbluefin/dakota testing, tracks gnome-software-next wip/core, builds the
-# default image without remote execution (prebuilt artifacts come from the
-# public gnome-build-meta and Bluefin caches) and pushes it as :gsn.
+# projectbluefin/dakota testing, tracks gnome-software-next and gunwald's Shell
+# extensions, builds the default image without remote execution (prebuilt
+# artifacts come from the public gnome-build-meta and Bluefin caches) and
+# pushes it as :gsn.
 # The rebase and the tracked ref only live in the runner, so upstream workflow
 # changes never have to be pushed with GITHUB_TOKEN; the image's revision and
 # version labels record both.
@@ -17,6 +18,7 @@ on:
     branches: [gsn]
     paths:
       - "elements/**"
+      - "files/**"
       - "patches/**"
       - "include/**"
       - "project.conf"
@@ -82,19 +84,20 @@ jobs:
         # Without remote execution the generated config builds with -j1.
         run: sed -i 's/^\(\s*max-jobs:\).*/\1 0/' buildstream-ci.conf
 
-      - name: Track gnome-software-next and gnome-shell
+      - name: Track gnome-software-next and gunwald's extensions
         id: gsn
         env:
           BST_FLAGS: -o x86_64_v3 false --no-interactive --config /src/buildstream-ci.conf
         run: |
           set -euo pipefail
-          just bst source track bluefin/gnome-software.bst bluefin/gnome-shell.bst
+          just bst source track bluefin/gnome-software.bst bluefin/shell-extensions/gunwald.bst
           # The first source of each element is the tracked fork.
           ref=$(sed -n 's/^\s*ref: //p' elements/bluefin/gnome-software.bst | head -1)
-          shell_ref=$(sed -n 's/^\s*ref: //p' elements/bluefin/gnome-shell.bst | head -1)
           echo "ref=${ref}" >> "$GITHUB_OUTPUT"
           echo "gnome-software-next: ${ref}" >> "$GITHUB_STEP_SUMMARY"
-          echo "gnome-shell (dakota): ${shell_ref}" >> "$GITHUB_STEP_SUMMARY"
+          echo "gunwald extensions:" >> "$GITHUB_STEP_SUMMARY"
+          paste -d" " <(sed -n 's|^\s*url: gitlab:gunwald/\(.*\)\.git|- \1|p' elements/bluefin/shell-extensions/gunwald.bst) \
+            <(sed -n 's/^\s*ref: //p' elements/bluefin/shell-extensions/gunwald.bst) >> "$GITHUB_STEP_SUMMARY"
 
       - name: Build OCI image with BuildStream
         env:

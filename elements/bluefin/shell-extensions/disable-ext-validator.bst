@@ -20,7 +20,7 @@ config:
       cat <<EOF > "%{install-root}%{datadir}/glib-2.0/schemas/zz3-bluefin-unsupported-stuff.gschema.override"
       [org.gnome.shell]
       disable-extension-version-validation=true
-      enabled-extensions=['caffeine@patapon.info', 'blur-my-shell@aunetx', 'dash-to-dock@micxgx.gmail.com', 'fuzzy-application-search@mkhl.codeberg.page', 'gradia-integration@alexandervanhee.github.io', 'gsconnect@andyholmes.github.io', 'custom-command-list@storageb.github.com', 'BudsLink-Companion@maniacx.github.com', 'tilingshell@ferrarodomenico.com']
+      enabled-extensions=['caffeine@patapon.info', 'blur-my-shell@aunetx', 'dash-to-dock@micxgx.gmail.com', 'fuzzy-application-search@mkhl.codeberg.page', 'gradia-integration@alexandervanhee.github.io', 'gsconnect@andyholmes.github.io', 'custom-command-list@storageb.github.com', 'BudsLink-Companion@maniacx.github.com', 'tilingshell@ferrarodomenico.com', 'glean@gunwald.gitlab.com', 'drop-to-shell@gunwald.gitlab.com', 'sheaf@gunwald.gitlab.com', 'tally@gunwald.gitlab.com']
       EOF
 
     - "%{install-extra}"
